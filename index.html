@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Mint-Agent · Research Workspace</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<style>
+  :root {
+    --jade: #0f6b5a;
+    --jade-strong: #075447;
+    --ink: #17231f;
+    --muted: #5f6f68;
+    --paper: #f6f8f6;
+    --line: #dfe7e2;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background:
+      radial-gradient(1100px 500px at 85% -10%, rgba(15, 107, 90, 0.08), transparent 60%),
+      var(--paper);
+    color: var(--ink);
+    font: 15px/1.65 "Source Han Serif SC", "Noto Serif SC", "Songti SC", Georgia, serif;
+  }
+  .card {
+    width: min(430px, 100%);
+    padding: 38px 36px 32px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 18px 48px rgba(23, 35, 31, 0.1);
+    text-align: center;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    font-weight: 700;
+    font-size: 19px;
+    letter-spacing: 0.01em;
+    color: var(--jade-strong);
+  }
+  .brand svg { width: 26px; height: 26px; }
+  .spinner {
+    width: 26px;
+    height: 26px;
+    margin: 6px auto 14px;
+    border: 3px solid var(--line);
+    border-top-color: var(--jade);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  h1 { margin: 0 0 6px; font-size: 17px; font-weight: 650; }
+  p { margin: 0; color: var(--muted); font-size: 13.5px; }
+  .fallback { display: none; margin-top: 16px; }
+  .fallback a {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 9px 18px;
+    border-radius: 999px;
+    background: var(--jade-strong);
+    color: #fff;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  .fallback small { display: block; margin-top: 12px; color: var(--muted); font-size: 12px; }
+  .fallback small a { all: unset; color: var(--jade); text-decoration: underline; cursor: pointer; }
+</style>
+</head>
+<body>
+  <main class="card">
+    <span class="brand" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3c2 3 5 4 8 4-1 8-4 12-8 14C8 19 5 15 4 7c3 0 6-1 8-4Z" />
+        <path d="M12 8v8M9 11l3-3 3 3" />
+      </svg>
+      Mint-Agent
+    </span>
+    <div class="spinner" id="spinner"></div>
+    <h1 id="status-zh">正在进入研究工作台…</h1>
+    <p id="status-en">Opening the research workspace…</p>
+    <div class="fallback" id="fallback">
+      <a id="manual-link" href="#">手动进入 · Open manually</a>
+      <small>
+        若长时间无法进入，请通过
+        <a href="https://mint-fin.github.io/mint-agent/#contact">项目主页</a>
+        联系我们。 If this persists, reach us via the
+        <a href="https://mint-fin.github.io/mint-agent/#contact">project page</a>.
+      </small>
+    </div>
+    <noscript>
+      <p style="margin-top:14px">请启用 JavaScript，或通过
+        <a href="https://mint-fin.github.io/mint-agent/">项目主页</a>获取入口。</p>
+    </noscript>
+  </main>
+<script>
+(function () {
+  function fail(target) {
+    document.getElementById("spinner").style.display = "none";
+    document.getElementById("status-zh").textContent = "自动跳转未完成";
+    document.getElementById("status-en").textContent = "Automatic redirect did not finish.";
+    var box = document.getElementById("fallback");
+    box.style.display = "block";
+    if (target) document.getElementById("manual-link").href = target;
+  }
+  fetch("config.json?ts=" + Date.now(), { cache: "no-store" })
+    .then(function (res) { if (!res.ok) throw new Error(String(res.status)); return res.json(); })
+    .then(function (cfg) {
+      var base = String(cfg.appBase || "").replace(/\/+$/, "");
+      if (!/^https:\/\//.test(base)) throw new Error("bad appBase");
+      var search = window.location.search || "?view=workspace";
+      var target = base + "/" + search + window.location.hash;
+      // Leave the fallback armed in case the network blocks the redirect.
+      setTimeout(function () { fail(target); }, 6000);
+      window.location.replace(target);
+    })
+    .catch(function () { fail(null); });
+})();
+</script>
+</body>
+</html>
